@@ -11,17 +11,17 @@
     ; number of balls spawned in that level
     ; ball update period(500-400-350 ms for each level). don't forget the +-100ms for moving the balls. 
     ; 15bits to determine which balls are active(5-10-15 are used for each level)
-    ; 15 times 6bits for determining where the balls are
+    ; 15 times 5bits for determining where the balls are
     UDATA_ACS
 health res 1
 level res 1
 timer1StartingVal res 1
 numberOfSpawnedBalls res 1
 ballUpdatePeriod res 1 ; 500 - 400 - 350ms for level 1-2-3
-activeBallsSet1 res 1 ; only use rightmost 5 bits
-activeBallsSet2 res 1 ; only use rightmost 5 bits after level-1
-activeBallsSet3 res 1 ; only use rightmost 5 bits after level-2
-ball1Position res 1 ; 0 indicates top left, 35 indicates bottom right. Add 6 per update.
+activeBallsSet1 res 1 ; 5 balls. only use rightmost 5 bits
+activeBallsSet2 res 1 ; 5 balls. only use rightmost 5 bits after level-1
+activeBallsSet3 res 1 ; 5 balls. only use rightmost 5 bits after level-2
+ball1Position res 1 ; 0 indicates top left, 23 indicates bottom right. Add 4 per update.
 ball2Position res 1
 ball3Position res 1 
 ball4Position res 1
@@ -36,6 +36,7 @@ ball12Position res 1
 ball13Position res 1 
 ball14Position res 1
 ball15Position res 1
+barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier comparison. 20 means bar is at 20 and 21'st points. 22 means bar is at 22nd and 23th points.
  
 ;*******************************************************************************
 ; Reset Vector
@@ -54,9 +55,6 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 
 ; <X> indicates X is a label/state etc.
 ; "X" indicates X is a variable
-   
-    
-
 
 ; initialize 
 ; -> set the bar at RA5 & RB5
@@ -64,6 +62,20 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 ; -> set health to 5 at D0 of 7segment display
 ; set "ball update period" to its new value
 ; -> goto <start>
+initialize
+    ;set ports, inputs-outputs etc.
+    MOVLW   0x0F
+    MOVWF   ADCON1 ; set A/D conversion
+    MOVLW   0xFF ; 
+    
+    ;set variables
+    movlw 30
+    movwf barPosition
+    movlw 1
+    movwf level
+    movlw 5
+    movwf health
+    
 
 ; start
 ; -> if RG0 is never pressed goto start
