@@ -9,15 +9,13 @@
     ; level
     ; timer1 starting value
     ; number of balls spawned in that level
-    ; ball update period(500-400-350 ms for each level). don't forget the +-100ms for moving the balls. 
     ; 15bits to determine which balls are active(5-10-15 are used for each level)
     ; 15 times 5bits for determining where the balls are
     UDATA_ACS
-health res 1
-level res 1
+health res 1; 7 segment display of health is at portH.0 -> b'00000001' = 1
+level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer1StartingVal res 1
 numberOfSpawnedBalls res 1
-ballUpdatePeriod res 1 ; 500 - 400 - 350ms for level 1-2-3
 activeBallsSet1 res 1 ; 5 balls. only use rightmost 5 bits
 activeBallsSet2 res 1 ; 5 balls. only use rightmost 5 bits after level-1
 activeBallsSet3 res 1 ; 5 balls. only use rightmost 5 bits after level-2
@@ -63,19 +61,50 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 ; set "ball update period" to its new value
 ; -> goto <start>
 initialize
-    ;set ports, inputs-outputs etc.
-    MOVLW   0x0F
-    MOVWF   ADCON1 ; set A/D conversion
-    MOVLW   0xFF ; 
-    
+    ;setup ports, inputs-outputs etc.
+    movlw 0x0F
+    movwf ADCON1 ; set A/D conversion
+    movlw 0x07 ; RG0-RG1-RG2(1+2+4=7) are input 
+    movwf TRISG
+    clrf LATG ; clear port G content just in case TODO can we clear without reading?
+    clrf TRISA; RA0-RA5, RB0-RB5, RC0-RC5, RD0-RD5 are outputs
+    clrf TRISB
+    clrf TRISC
+    clrf TRISD
+    clrf LATA ; clear output port content just in case TODO can we clear without reading?
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    clrf TRISH ; porth and portj are 7segment display(outputs)
+    clrf TRISJ
+    clrf LATH
+    clrf LATJ
     ;set variables
-    movlw 30
-    movwf barPosition
-    movlw 1
-    movwf level
     movlw 5
     movwf health
-    
+    movlw 1
+    movwf level
+    movlw 1
+    movwf TRISH ; enable first 7segment display for setting health
+    movlw b'01101101' ;5 for 7segment display
+    movwf LATJ ; TODO we may need to movwf to TRISJ instead
+    nop ;it says wait a while on the hw pdf
+    clrf TRISH
+    clrf LATJ
+    movlw 2
+    movwf TRISH ;enable second 7segment display for setting level
+    movlw b'00000110' ; 1 for 7segment display
+    movwf LATJ ; TODO we may need to movwf to TRISJ instead
+    nop ;it says wait a while on the hw pdf
+    clrf TRISH
+    clrf LATJ
+    ;TODO set timer1 start value
+    clrf numberOfSpawnedBalls
+    clrf activeBallsSet1
+    clrf activeBallsSet2
+    clrf activeBallsSet3
+    movlw 20
+    movwf barPosition
 
 ; start
 ; -> if RG0 is never pressed goto start
