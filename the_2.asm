@@ -4,8 +4,38 @@
 ;*******************************************************************************
 ; Variables & Constants
 ;*******************************************************************************
+; variables 
+    ; health
+    ; level
+    ; timer1 starting value
+    ; number of balls spawned in that level
+    ; ball update period(500-400-350 ms for each level). don't forget the +-100ms for moving the balls. 
+    ; 15bits to determine which balls are active(5-10-15 are used for each level)
+    ; 15 times 6bits for determining where the balls are
     UDATA_ACS
-;t1	res 1	; used in delay
+health res 1
+level res 1
+timer1StartingVal res 1
+numberOfSpawnedBalls res 1
+ballUpdatePeriod res 1 ; 500 - 400 - 350ms for level 1-2-3
+activeBallsSet1 res 1 ; only use rightmost 5 bits
+activeBallsSet2 res 1 ; only use rightmost 5 bits after level-1
+activeBallsSet3 res 1 ; only use rightmost 5 bits after level-2
+ball1Position res 1 ; 0 indicates top left, 35 indicates bottom right. Add 6 per update.
+ball2Position res 1
+ball3Position res 1 
+ball4Position res 1
+ball5Position res 1 
+ball6Position res 1
+ball7Position res 1 
+ball8Position res 1
+ball9Position res 1 
+ball10Position res 1
+ball11Position res 1 
+ball12Position res 1
+ball13Position res 1 
+ball14Position res 1
+ball15Position res 1
  
 ;*******************************************************************************
 ; Reset Vector
@@ -26,14 +56,7 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 ; "X" indicates X is a variable
    
     
-; variables 
-; health
-; level
-; timer1 starting value
-; number of balls spawned in that level
-; ball update period(500-400-350 ms for each level). don't forget the +-100ms for moving the balls. 
-; 15bits to determine which balls are active(5-10-15 are used for each level)
-; 15 times 6bits for determining where the balls are
+
 
 ; initialize 
 ; -> set the bar at RA5 & RB5
