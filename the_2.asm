@@ -54,29 +54,29 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 ; ->goto <move the active balls>
 
 ; move the active balls
-; -> if "ball update period" +-100ms passed
-;	-> for each active ball(can find with "15bit active balls")
-;	    -> add 6 to the corresponding "6bit ball location"
-; -> goto <check active balls>
+    ; -> if "ball update period" +-100ms passed
+    ;	-> for each active ball(can find with "15bit active balls")
+    ;	    -> add 6 to the corresponding "6bit ball location"
+    ; -> goto <check active balls>
 
-; check active balls
-; -> for each active ball(can find with "15bit active balls")
-;	-> if "6bit ball location" >= 36, i.e ball hasn't been caught
-;	    -> decrement "health" and update 7segment display
-;	    -> if "health" == 0, goto <restart>	----------- <- may also goto <lose> if we want to wait for sometime
-;	    -> deactivate the ball by updating "15bit active balls"
-;	-> else if "6bit ball location" >=30 & ball is on the bar, i.e ball has been caught
-;	    -> deactivate the ball by updating "15bit active balls"
-; -> if "15 bit active balls" == 0, goto <next level>
-; -> goto <create the balls>
+    ; check active balls
+    ; -> for each active ball(can find with "15bit active balls")
+    ;	-> if "6bit ball location" >= 36, i.e ball hasn't been caught
+    ;	    -> decrement "health" and update 7segment display
+    ;	    -> if "health" == 0, goto <restart>	----------- <- may also goto <lose> if we want to wait for sometime
+    ;	    -> deactivate the ball by updating "15bit active balls"
+    ;	-> else if "6bit ball location" >=30 & ball is on the bar, i.e ball has been caught
+    ;	    -> deactivate the ball by updating "15bit active balls"
+    ; -> if "15 bit active balls" == 0, goto <next level>
+    ; -> goto <create the balls>
 
-; create the balls
-; -> if we need to create more balls and  "ball update period" ms passed
-;	-> find a non active ball index from "15bit active balls". (can use "number of spawned balls")
-;	    -> Set that index to 1.
-;	    -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
-;	    -> increase "number of spawned balls" by 1
-; -> goto <move the bar>
+    ; create the balls
+    ; -> if we need to create more balls and  "ball update period" ms passed
+    ;	-> find a non active ball index from "15bit active balls". (can use "number of spawned balls")
+    ;	    -> Set that index to 1.
+    ;	    -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
+    ;	    -> increase "number of spawned balls" by 1
+    ; -> goto <move the bar>
 
 ; next level
 ; if "level" == 3, goto <restart>
