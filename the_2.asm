@@ -201,7 +201,7 @@ main
     call initialize
     call start
     loop:
-	goto moveTheBar
+	call moveTheBar
 	
     goto loop
     END
