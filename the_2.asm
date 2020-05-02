@@ -105,6 +105,9 @@ initialize
     clrf activeBallsSet3
     movlw 20
     movwf barPosition
+    mowlw b'00100000'
+    movwf LATA ; light the bar
+    movwf LATB ; light the bar
     return
 
 ; start
@@ -122,7 +125,33 @@ start
 ; -> if RG2 is pressed & bar is not at RE5-RF5 move right. Reset RG2 to 0 and goto <move the active balls>.
 ; -> if RG3 is pressed & bar is not at RA5-RB5 move left. Reset RG3 to 0 and goto <move the active balls>.
 ; ->goto <move the active balls>
-
+moveTheBar
+    btfsc PORTG,2 ; if RG2 is NOT pressed don't execute move right
+    goto moveRight
+    btfsc PORTG,3 ; if RG3 is NOT pressed don't execute move left
+    goto moveLeft
+    return
+    
+    moveRight:
+	movlw 22
+	cpfslt barPosition ; skip if we are already on the rightmost position
+	return ;(barPosition=22)
+	incf barPosition
+	goto lightTheBar
+	
+    moveLeft:
+	movlw 20
+	cpfsgt barPosition ;skip if we are already on the leftmost position
+	return ;(barPosition=20)
+	decf barPosition
+	goto lightTheBar
+	
+    lightTheBar:
+	;TODO light the bar
+	mowlw b'00100000' ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
+	
+	return
+	
 ; move the active balls
     ; -> if "ball update period" +-100ms passed
     ;	-> for each active ball(can find with "15bit active balls")
@@ -172,6 +201,7 @@ main
     call initialize
     call start
     loop:
+	goto moveTheBar
 	
     goto loop
     END
