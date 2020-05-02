@@ -105,13 +105,19 @@ initialize
     clrf activeBallsSet3
     movlw 20
     movwf barPosition
+    return
 
 ; start
 ; -> if RG0 is never pressed goto start
 ; -> if pressed before, goto <move the bar>
 ; -> save timer1 value(16 bit)
 ; -> goto <move the bar>
-
+start
+    btfss PORTG,0 ; if RG0 is pressed break from start loop
+    goto start
+    ;TODO save timer1 value
+    return
+    
 ; move the bar
 ; -> if RG2 is pressed & bar is not at RE5-RF5 move right. Reset RG2 to 0 and goto <move the active balls>.
 ; -> if RG3 is pressed & bar is not at RA5-RB5 move left. Reset RG3 to 0 and goto <move the active balls>.
@@ -163,5 +169,9 @@ initialize
 ; goto <restart>
     
 main
-    call initialize    
+    call initialize
+    call start
+    loop:
+	
+    goto loop
     END
