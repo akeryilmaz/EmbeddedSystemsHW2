@@ -14,7 +14,8 @@
     UDATA_ACS
 health res 1; 7 segment display of health is at portH.0 -> b'00000001' = 1
 level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
-timer1StartingVal res 1
+timer_counter res 1
+timer_state res 1 ; this is set when the required time has passed for each level
 numberOfSpawnedBalls res 1
 activeBallsSet1 res 1 ; 5 balls. only use rightmost 5 bits
 activeBallsSet2 res 1 ; 5 balls. only use rightmost 5 bits after level-1
@@ -43,11 +44,31 @@ barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier c
 RES_VECT  CODE    0x0000            ; processor reset vector
     GOTO    main                   ; go to beginning of program
 
+;Interrupt Vector    
+
+org     0x08
+goto    isr             ;go to interrupt service routine
+    
 ;*******************************************************************************
 ; MAIN PROGRAM
 ;*******************************************************************************
-	
-    
+
+isr:
+    btsfs INTCON, 2 ; TMR0IF is bit 2
+    retfie ;some other interrupt, should not happen return
+    decf	timer_counter, f              ;Timer interrupt handler part begins here by decrementing count variable
+    btfss	STATUS, Z               ;Is the result Zero?
+    goto	timer_interrupt_exit    ;No, then exit from interrupt service routine
+    clrf	timer_counter                 ;Yes, then clear count variable
+    comf	timer_state, f                ;Complement our state variable
+    ;TO-DO: handle different cases for level here and set timer_counter to some initial value
+
+timer_interrupt_exit:
+    bcf		INTCON, 2		    ;Clear TMROIF
+    movlw	d'61'               ;256-61=195; 195*256*100 = 4992000 instruction cycle;
+    movwf	TMR0
+    call	restore_registers   ;Restore STATUS and PCLATH registers to their state before interrupt occurs
+    retfie
     
 ;NOTE: the +-100 ms might be the same for all balls at each update or it might be unique to each ball at each update.
 
@@ -60,7 +81,16 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 ; -> set health to 5 at D0 of 7segment display
 ; set "ball update period" to its new value
 ; -> goto <start>
-initialize
+initialize:
+    ;setup timer
+    clrf TMR0; TMR0 = 0
+    clrf INTCON; Interrupts disabled for now
+    movlw b'11010111'; enable timer, 8-bit operation, ; falling edge, select prescaler ; with 1:256, internal source
+    movwf T0CON; T0CON <-W
+    movlw d'61'; 10MHZ clock -> 10^7 cycles per second -> 10^-4 ms per cycle; 
+    movwf TMR0L; counter can count x*256 cycles -> x*256*10^-4 ms -> x=195 for 4,992 ms -> 256-195 = 61 = '0x3d'
+    movlw d'100'; 100*4,992= 499,2 ms is passed to the counter to count ~500ms for level1
+    movwf timer_counter
     ;setup ports, inputs-outputs etc.
     movlw 0x0F
     movwf ADCON1 ; set A/D conversion
@@ -98,7 +128,11 @@ initialize
     nop ;it says wait a while on the hw pdf
     clrf TRISH
     clrf LATJ
-    ;TODO set timer1 start value
+    ;Enable interrupts
+    movlw   b'11100000' ;Enable Global, peripheral, Timer0 by setting GIE, PEIE, TMR0IE bits to 1
+    movwf   INTCON
+    bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
+    
     clrf numberOfSpawnedBalls
     clrf activeBallsSet1
     clrf activeBallsSet2
@@ -205,3 +239,23 @@ main
 	
     goto loop
     END
+
+;;;;;;;;;;;; Register handling for proper operation of main program ;;;;;;;;;;;;
+save_registers:
+    movwf 	w_temp          ;Copy W to TEMP register
+    swapf 	STATUS, w       ;Swap status to be saved into W
+    clrf 	STATUS          ;bank 0, regardless of current bank, Clears IRP,RP1,RP0
+    movwf 	status_temp     ;Save status to bank zero STATUS_TEMP register
+    movf 	PCLATH, w       ;Only required if using pages 1, 2 and/or 3
+    movwf 	pclath_temp     ;Save PCLATH into W
+    clrf 	PCLATH          ;Page zero, regardless of current page
+	return
+
+restore_registers:
+    movf 	pclath_temp, w  ;Restore PCLATH
+    movwf 	PCLATH          ;Move W into PCLATH
+    swapf 	status_temp, w  ;Swap STATUS_TEMP register into W
+    movwf 	STATUS          ;Move W into STATUS register
+    swapf 	w_temp, f       ;Swap W_TEMP
+    swapf 	w_temp, w       ;Swap W_TEMP into W
+    return
