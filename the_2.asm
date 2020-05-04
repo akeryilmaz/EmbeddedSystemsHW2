@@ -4,7 +4,16 @@
 ;*******************************************************************************
 ; Variables & Constants
 ;*******************************************************************************
-; variables 
+w_temp  udata 0x23
+w_temp
+
+status_temp udata 0x24
+status_temp
+
+pclath_temp udata 0x25
+pclath_temp
+    
+    ; variables 
     ; health
     ; level
     ; timer1 starting value
@@ -47,8 +56,8 @@ RES_VECT  CODE    0x0000            ; processor reset vector
 
 ;Interrupt Vector    
 
-org     0x08
-goto    isr             ;go to interrupt service routine
+INT_VECT CODE     0x08
+    GOTO    isr             ;go to interrupt service routine
 
 ;;;;;;;;;;;; Register handling for proper operation of main program ;;;;;;;;;;;;
 save_registers:
@@ -74,26 +83,25 @@ restore_registers:
 ; MAIN PROGRAM
 ;*******************************************************************************
 
-table:
+timer0_table:
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
     ADDWF   PCL, F  ; modify program counter
-    RETLW  ;0 level
+    RETLW 0 ;should not happen
     RETLW d'100' ;1 -> 100*4,992 = 499,2 ms
     RETLW d'80' ;2 -> 80*4,992 = 399,39 ms
     RETLW d'60' ;3 -> 60*4,992 = 299,52 ms
     
 isr:
-    btsfs INTCON, 2 ; TMR0IF is bit 2
+    btfss INTCON, 2 ; TMR0IF is bit 2
     retfie ;some other interrupt, should not happen return
-    decf	timer_counter, f              ;Timer interrupt handler part begins here by decrementing count variable
+    decf	timer0_counter, f              ;Timer interrupt handler part begins here by decrementing count variable
     btfss	STATUS, Z               ;Is the result Zero?
     goto	timer_interrupt_exit    ;No, then exit from interrupt service routine
     clrf	timer0_counter                 ;Yes, then clear count variable
     comf	timer0_state, f                ;Complement our state variable
-    ;TO-DO: handle different cases for level here and set timer_counter to some initial value
     movf	level, W
-    call	table
+    call	timer0_table
     movwf	timer0_counter
 
 timer_interrupt_exit:
@@ -172,7 +180,7 @@ initialize
     clrf activeBallsSet3
     movlw 20
     movwf barPosition
-    mowlw b'00100000'
+    movlw b'00100000'
     movwf LATA ; light the bar
     movwf LATB ; light the bar
     return
@@ -206,31 +214,31 @@ moveTheBar
     goto moveLeft
     return
     
-    moveRight:
+moveRight:
 	movlw 22
 	cpfslt barPosition ; skip if we are already on the rightmost position
 	return ;(barPosition=22)
 	incf barPosition
 	goto lightTheBar
 	
-    moveLeft:
+moveLeft:
 	movlw 20
 	cpfsgt barPosition ;skip if we are already on the leftmost position
 	return ;(barPosition=20)
 	decf barPosition
 	goto lightTheBar
 	
-    lightTheBar:
+lightTheBar:
 	;TODO light the bar
 	; only the 5th light of A-F will be on (don't forget to close the previous light positions)
 	
-	mowlw b'00000000' ; reset led not to keep previous data (we can change the design)
+	movlw b'00000000' ; reset led not to keep previous data (we can change the design)
 	movwf	LATA
 	movwf	LATB
 	movwf	LATC
 	movwf	LATD    
     
-	case20:		; case for bar=20
+case20:		; case for bar=20
 	    movlw 20
 	    cpfseq barPosition
 	    goto case21
@@ -238,7 +246,7 @@ moveTheBar
 	    movwf LATA
 	    movwf LATB
 	    return
-	case21:		; case for bar=21
+case21:		; case for bar=21
 	    movlw 21
 	    cpfseq barPosition
 	    goto case22
@@ -247,7 +255,7 @@ moveTheBar
 	    movwf LATC
 	    return
 
-	case22:		; case for bar=22
+case22:		; case for bar=22
 	    movlw 22
 	    cpfseq barPosition
 	    goto case20
@@ -318,7 +326,7 @@ idle:  ; restart part is here too
 main
     call initialize
     goto idle
-    loop:
+loop:
 	call moveTheBar
 	
     goto loop
