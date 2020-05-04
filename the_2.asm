@@ -27,9 +27,7 @@ level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer0_counter res 1
 timer0_state res 1 ; this is set when the required time has passed for each level
 numberOfSpawnedBalls res 1
-activeBallsSet1 res 1 ; 5 balls. only use rightmost 5 bits
-activeBallsSet2 res 1 ; 5 balls. only use rightmost 5 bits after level-1
-activeBallsSet3 res 1 ; 5 balls. only use rightmost 5 bits after level-2
+activeBalls res 1 ; 6 balls can be active at 1 time
 ball1Position res 1 ; 0 indicates top left, 23 indicates bottom right. Add 4 per update.
 ball2Position res 1
 ball3Position res 1 
@@ -289,7 +287,15 @@ case22:		; case for bar=22
     ;	    -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
     ;	    -> increase "number of spawned balls" by 1
     ; -> goto <move the bar>
+ballUpdate
+    btfss timer0_state, 0 ; if enough time hasn't passed, return
+    return
+    clrf timer0_state
+    btfsc activeBalls, 0 ; if ball not active, skip
+    call ball1Update
 
+ball1Update
+    
 ; next level
 ; if "level" == 3, goto <restart>
 ; set "number of spawned balls" to 0
