@@ -184,7 +184,38 @@ moveTheBar
 	;TODO light the bar
 	mowlw b'00100000' ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
 	
-	return
+	mowlw b'00000000' ; reset led not to keep previous data (we can change the design)
+	movwf	LATA
+	movwf	LATB
+	movwf	LATC
+	movwf	LATD    
+    
+	case20:		; case for bar=20
+	    movlw 20
+	    cpfseq barPosition
+	    goto case21
+	    movlw b'00100000'
+	    movwf LATA
+	    movwf LATB
+	    return
+	case21:		; case for bar=21
+	    movlw 21
+	    cpfseq barPosition
+	    goto case22
+	    movlw b'00100000'
+	    movwf LATB
+	    movwf LATC
+	    return
+
+	case22:		; case for bar=22
+	    movlw 22
+	    cpfseq barPosition
+	    goto case20
+	    movlw b'00100000'
+	    movwf LATC
+	    movwf LATD
+	    return
+	
 	
 ; move the active balls
     ; -> if "ball update period" +-100ms passed
