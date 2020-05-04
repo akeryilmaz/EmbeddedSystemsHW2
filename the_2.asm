@@ -286,6 +286,30 @@ ballUpdate
     call ball1Update
 
 ball1Update
+    movlw 4
+    addwf ball1Position
+    movf barPosition
+    subfwb ball1Position, 0 ; store in W
+    btfsc STATUS,Z ; if result is not zero skip
+    bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
+    incf barPosition, 0 ; store in W
+    subfwb ball1Position, 0 ; store in W
+    btfsc STATUS,Z ; if result is not zero skip
+    bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
+    btfss activeBalls, 0 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball1Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball1Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 0
+    return
+    
+
+; TODO decrease health
+decreaseHealth
+    return
     
 ; next level
 ; if "level" == 3, goto <restart>
