@@ -36,7 +36,8 @@ ball4Position res 1
 ball5Position res 1 
 ball6Position res 1
 barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier comparison. 20 means bar is at 20 and 21'st points. 22 means bar is at 22nd and 23th points.
- 
+timer1Modulo res 1; used for detecting where to spawn new ball
+
 ;*******************************************************************************
 ; Reset Vector
 ;*******************************************************************************
@@ -302,6 +303,36 @@ ballUpdate
     movf	level, W
     call	level_table
     movwf	numberOfBallsToCreate
+    
+    ;create a new ball
+    btfss activeBalls, 0 ; if ball is active, skip
+    goto createBall1
+;    btfss activeBalls, 1 ; if ball is active, skip
+;    goto createBall2
+;    btfss activeBalls, 2 ; if ball is active, skip
+;    goto createBall3
+;    btfss activeBalls, 3 ; if ball is active, skip
+;    goto createBall4
+;    btfss activeBalls, 4 ; if ball is active, skip
+;    goto createBall5
+;    btfss activeBalls, 5 ; if ball is active, skip
+;    goto createBall6
+    goto finishBallUpdate
+    
+    finishBallUpdate:
+	rrncf timer1_initial_value ; for all levels shift 1 right
+	movlw 1
+	cpfsgt level  ; if level >1 shift right 2 more times
+	rrncf timer1_initial_value
+	cpfsgt level  
+	rrncf timer1_initial_value
+	movlw 2
+	cpfsgt level  ; if level >2 shift right 2 more times
+	rrncf timer1_initial_value
+	cpfsgt level  
+	rrncf timer1_initial_value
+	return 
+    
 skip_level_configuration:
     movf	level, W
     call	timer0_table
@@ -310,6 +341,33 @@ skip_level_configuration:
     call ball1Update
     return ;not sure if the behaviour is correct. put for completeness.
 
+createBall1:
+    bsf activeBalls, 0
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball1Position
+    movlw 0
+    cpfsgt timer1Modulo ; if timer1Modulo = 0 LATA 
+    bsf LATA,1
+    cpfsgt timer1Modulo
+    goto finishBallUpdate
+    movlw 1
+    cpfsgt timer1Modulo ; if timer1Modulo = 1 LATB
+    bsf LATB,1
+    cpfsgt timer1Modulo
+    goto finishBallUpdate
+    movlw 2
+    cpfsgt timer1Modulo ; if timer1Modulo = 2 LATC
+    bsf LATC,1
+    cpfsgt timer1Modulo
+    goto finishBallUpdate
+    movlw 3
+    cpfsgt timer1Modulo ; if timer1Modulo = 3 LATD
+    bsf LATD,1
+    cpfsgt timer1Modulo
+    goto finishBallUpdate
+    
 ball1Update
     movlw 4
     addwf ball1Position
@@ -330,7 +388,7 @@ ball1Update
     cpfslt ball1Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 0
     return
-    
+
 
 ; TODO decrease health
 decreaseHealth
