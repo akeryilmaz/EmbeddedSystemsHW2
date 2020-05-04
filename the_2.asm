@@ -308,6 +308,7 @@ skip_level_configuration:
     movwf	timer0_counter
     btfsc activeBalls, 0 ; if ball not active, skip
     call ball1Update
+    return ;not sure if the behaviour is correct. put for completeness.
 
 ball1Update
     movlw 4
