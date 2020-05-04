@@ -182,7 +182,7 @@ moveTheBar
 	
     lightTheBar:
 	;TODO light the bar
-	mowlw b'00100000' ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
+	; only the 5th light of A-F will be on (don't forget to close the previous light positions)
 	
 	mowlw b'00000000' ; reset led not to keep previous data (we can change the design)
 	movwf	LATA
