@@ -27,6 +27,7 @@ level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer0_counter res 1
 timer0_state res 1 ; this is set when the required time has passed for each level
 numberOfSpawnedBalls res 1
+numberOfBallsToCreate res 1
 activeBalls res 1 ; 6 balls can be active at 1 time
 ball1Position res 1 ; 0 indicates top left, 23 indicates bottom right. Add 4 per update.
 ball2Position res 1
@@ -72,6 +73,16 @@ restore_registers:
 ; MAIN PROGRAM
 ;*******************************************************************************
 
+    
+level_table:
+    MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
+    RLNCF   WREG, W ; multiply index X2
+    ADDWF   PCL, F  ; modify program counter
+    RETLW 0 ;should not happen
+    RETLW d'5' ;1 -> 5 balls
+    RETLW d'10' ;2 -> 10 balls
+    RETLW d'15' ;3 -> 15 balls
+    
 timer0_table:
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
@@ -89,9 +100,6 @@ isr:
     goto	timer_interrupt_exit    ;No, then exit from interrupt service routine
     clrf	timer0_counter                 ;Yes, then clear count variable
     comf	timer0_state, f                ;Complement our state variable
-    movf	level, W
-    call	timer0_table
-    movwf	timer0_counter
 
 timer_interrupt_exit:
     bcf		INTCON, 2		    ;Clear TMROIF
@@ -142,6 +150,8 @@ initialize
     ;set variables
     movlw 5
     movwf health
+    movlw 5
+    movwf numberOfBallsToCreate
     movlw 1
     movwf level
     movlw 1
@@ -158,15 +168,9 @@ initialize
     nop ;it says wait a while on the hw pdf
     clrf TRISH
     clrf LATJ
-    ;Enable interrupts
-    movlw   b'11100000' ;Enable Global, peripheral, Timer0 by setting GIE, PEIE, TMR0IE bits to 1
-    movwf   INTCON
-    bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
     
     clrf numberOfSpawnedBalls
-    clrf activeBallsSet1
-    clrf activeBallsSet2
-    clrf activeBallsSet3
+    clrf activeBalls
     movlw 20
     movwf barPosition
     movlw b'00100000'
@@ -177,7 +181,7 @@ initialize
 
 ; -> save timer1 value(16 bit)
 ; wait for RGO, if it is pressed and released goto loop
-wait_rg0_press:			;TODO save timer1 value
+wait_rg0_press:			
     btfsc pressed, 0
     goto wait_rg0_release
     btfss PORTG, 0
@@ -188,6 +192,11 @@ wait_rg0_release:
     btfsc PORTG, 0
     goto wait_rg0_release
     bcf pressed, 0
+    ;Enable interrupts 
+    movlw   b'11100000' ;Enable Global, peripheral, Timer0 by setting GIE, PEIE, TMR0IE bits to 1
+    movwf   INTCON
+    bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
+    ;TODO save timer1 value
     goto loop
     
    
@@ -279,9 +288,24 @@ case22:		; case for bar=22
     ;	    -> increase "number of spawned balls" by 1
     ; -> goto <move the bar>
 ballUpdate
-    btfss timer0_state, 0 ; if enough time hasn't passed, return
+    btfss	timer0_state, 0 ; if enough time hasn't passed, return
     return
-    clrf timer0_state
+    clrf	timer0_state	; enough time has passed rearrange timer and move balls
+    decf	numberOfBallsToCreate
+    btfss	STATUS, Z               ;Is the result Zero?
+    goto	skip_level_configuration
+    incf	level 
+    movf	level, W
+    sublw	d'4'; if level is four
+    btfss	STATUS, Z               ;Is the result Zero?
+    nop; TODO: return to initial configuraition
+    movf	level, W
+    call	level_table
+    movwf	numberOfBallsToCreate
+skip_level_configuration:
+    movf	level, W
+    call	timer0_table
+    movwf	timer0_counter
     btfsc activeBalls, 0 ; if ball not active, skip
     call ball1Update
 
@@ -324,7 +348,7 @@ main
     call initialize
     goto idle
 loop:
-	call moveTheBar
-	
+    call moveTheBar
+    call ballUpdate
     goto loop
     END
