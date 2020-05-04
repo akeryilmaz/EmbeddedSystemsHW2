@@ -349,22 +349,22 @@ createBall1:
     movff timer1Modulo, ball1Position
     movlw 0
     cpfsgt timer1Modulo ; if timer1Modulo = 0 LATA 
-    bsf LATA,1
+    bsf LATA,0
     cpfsgt timer1Modulo
     goto finishBallUpdate
     movlw 1
     cpfsgt timer1Modulo ; if timer1Modulo = 1 LATB
-    bsf LATB,1
+    bsf LATB,0
     cpfsgt timer1Modulo
     goto finishBallUpdate
     movlw 2
     cpfsgt timer1Modulo ; if timer1Modulo = 2 LATC
-    bsf LATC,1
+    bsf LATC,0
     cpfsgt timer1Modulo
     goto finishBallUpdate
     movlw 3
     cpfsgt timer1Modulo ; if timer1Modulo = 3 LATD
-    bsf LATD,1
+    bsf LATD,0
     cpfsgt timer1Modulo
     goto finishBallUpdate
     
