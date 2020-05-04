@@ -6,8 +6,8 @@
 CND_BASEDIR=`pwd`
 # default configuration
 CND_ARTIFACT_DIR_default=dist/default/production
-CND_ARTIFACT_NAME_default=The2.X.production.hex
-CND_ARTIFACT_PATH_default=dist/default/production/The2.X.production.hex
+CND_ARTIFACT_NAME_default=EmbeddedSystemsHW2.production.hex
+CND_ARTIFACT_PATH_default=dist/default/production/EmbeddedSystemsHW2.production.hex
 CND_PACKAGE_DIR_default=${CND_DISTDIR}/default/package
-CND_PACKAGE_NAME_default=the2.x.tar
-CND_PACKAGE_PATH_default=${CND_DISTDIR}/default/package/the2.x.tar
+CND_PACKAGE_NAME_default=embeddedsystemshw2.tar
+CND_PACKAGE_PATH_default=${CND_DISTDIR}/default/package/embeddedsystemshw2.tar
