@@ -34,15 +34,6 @@ ball3Position res 1
 ball4Position res 1
 ball5Position res 1 
 ball6Position res 1
-ball7Position res 1 
-ball8Position res 1
-ball9Position res 1 
-ball10Position res 1
-ball11Position res 1 
-ball12Position res 1
-ball13Position res 1 
-ball14Position res 1
-ball15Position res 1
 barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier comparison. 20 means bar is at 20 and 21'st points. 22 means bar is at 22nd and 23th points.
  
 ;*******************************************************************************
