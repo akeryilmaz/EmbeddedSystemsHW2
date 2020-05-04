@@ -164,9 +164,7 @@ initialize
     bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
     
     clrf numberOfSpawnedBalls
-    clrf activeBallsSet1
-    clrf activeBallsSet2
-    clrf activeBallsSet3
+    clrf activeBalls
     movlw 20
     movwf barPosition
     movlw b'00100000'
