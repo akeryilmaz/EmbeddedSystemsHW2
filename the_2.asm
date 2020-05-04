@@ -12,6 +12,7 @@
     ; 15bits to determine which balls are active(5-10-15 are used for each level)
     ; 15 times 5bits for determining where the balls are
     UDATA_ACS
+pressed res 1 ; pressed[0] := RG0, pressed[2] := RG2, pressed[3] := RG3    
 health res 1; 7 segment display of health is at portH.0 -> b'00000001' = 1
 level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer_counter res 1
@@ -81,7 +82,7 @@ timer_interrupt_exit:
 ; -> set health to 5 at D0 of 7segment display
 ; set "ball update period" to its new value
 ; -> goto <start>
-initialize:
+initialize
     ;setup timer
     clrf TMR0; TMR0 = 0
     clrf INTCON; Interrupts disabled for now
@@ -94,7 +95,7 @@ initialize:
     ;setup ports, inputs-outputs etc.
     movlw 0x0F
     movwf ADCON1 ; set A/D conversion
-    movlw 0x07 ; RG0-RG1-RG2(1+2+4=7) are input 
+    movlw b'00001101' ; RG0-RG2-RG3 are input 
     movwf TRISG
     clrf LATG ; clear port G content just in case TODO can we clear without reading?
     clrf TRISA; RA0-RA5, RB0-RB5, RC0-RC5, RD0-RD5 are outputs
@@ -144,16 +145,23 @@ initialize:
     movwf LATB ; light the bar
     return
 
-; start
-; -> if RG0 is never pressed goto start
-; -> if pressed before, goto <move the bar>
+
 ; -> save timer1 value(16 bit)
-; -> goto <move the bar>
-start
-    btfss PORTG,0 ; if RG0 is pressed break from start loop
-    goto start
-    ;TODO save timer1 value
-    return
+; wait for RGO, if it is pressed and released goto loop
+wait_rg0_press:			;TODO save timer1 value
+    btfsc pressed, 0
+    goto wait_rg0_release
+    btfss PORTG, 0
+    goto wait_rg0_press
+    bsf pressed, 0
+    
+wait_rg0_release:
+    btfsc PORTG, 0
+    goto wait_rg0_release
+    bcf pressed, 0
+    goto loop
+    
+   
     
 ; move the bar
 ; -> if RG2 is pressed & bar is not at RE5-RF5 move right. Reset RG2 to 0 and goto <move the active balls>.
@@ -261,10 +269,23 @@ moveTheBar
 ; lose(OPTIONAL?)
 ; wait for some
 ; goto <restart>
+
+
+idle:  ; restart part is here too
+    ; TODO set "15 bit active balls" to 0
+    ; TODO set "ball update period" to its new value
+    clrf pressed
+    clrf numberOfSpawnedBalls 
+    movlw 1
+    movwf level
+    movlw 5
+    movwf health
+    clrf LATG
+    goto wait_rg0_press
     
 main
     call initialize
-    call start
+    goto idle
     loop:
 	call moveTheBar
 	
