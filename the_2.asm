@@ -210,12 +210,12 @@ initialize
     movwf ADCON1 ; set A/D conversion
     movlw b'00001101' ; RG0-RG2-RG3 are input 
     movwf TRISG
-    clrf LATG ; clear port G content just in case TODO can we clear without reading?
+    clrf LATG 
     clrf TRISA; RA0-RA5, RB0-RB5, RC0-RC5, RD0-RD5 are outputs
     clrf TRISB
     clrf TRISC
     clrf TRISD
-    clrf LATA ; clear output port content just in case TODO can we clear without reading?
+    clrf LATA ; clear output port content just in case
     clrf LATB
     clrf LATC
     clrf LATD
@@ -240,7 +240,7 @@ initialize
     movlw d'2'
     movwf LATH ;enable second 7segment display for setting level
     movlw b'00000110' ; 1 for 7segment display
-    movwf LATJ ; TODO we may need to movwf to TRISJ instead
+    movwf LATJ 
     nop ;it says wait a while on the hw pdf
     clrf LATH
     clrf LATJ
@@ -442,7 +442,6 @@ resetBarLights:
     goto lightTheBar
     
 lightTheBar:
-    ;TODO light the bar
     ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
     
 case20:     ; case for bar=20
@@ -741,11 +740,18 @@ idle:  ; restart part is here
     clrf timer0_state
     clrf activeBalls
     clrf pressed
+    clrf LATA
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    movlw d'20'
+    movwf barPosition
+    bsf LATA,5
+    bsf LATB,5
     movlw d'1'
     movwf level
     movlw d'5'
     movwf health
-    ; TODO bar position should be reset
     clrf LATG
     ;7-segent display for health
     movlw b'00000001'
