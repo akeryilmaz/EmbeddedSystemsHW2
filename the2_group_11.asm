@@ -2,6 +2,7 @@
  ;  Ahmet Dara Vefa 2237899
  ;  Cenker Altinbay 2171213
  ;  Grading choce: THE2_V2 on simulation environment
+ ;  7 segment displays are shown one by one on the board.
  #include "p18f8722.inc"
 
     CONFIG OSC=HSPLL, FCMEN=OFF, IESO=OFF,PWRT=OFF,BOREN=OFF, WDT=OFF, MCLRE=ON, LPT1OSC=OFF, LVP=OFF, XINST=OFF, DEBUG=OFF
@@ -281,11 +282,11 @@ wait_rg0_release:
     goto main_loop
     
 light_balls
-    movlw b'00100000'
-    andwf LATA
-    andwf LATB
-    andwf LATC
-    andwf LATD
+    clrf LATA
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    call lightTheBar
     btfss activeBalls, 0 ; if ball is active, skip
     goto ligthball2
     movf ball1Position, W
@@ -445,9 +446,10 @@ resetBarLights:
     incf barPosition
     btfss barMoveDirection,0 ; 0 = move left ;; 1 = move right
     decf barPosition
-    goto lightTheBar
+    call lightTheBar
+    return
     
-lightTheBar:
+lightTheBar
     ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
     
 case20:     ; case for bar=20
@@ -529,11 +531,11 @@ ballUpdate:
     btfsc   STATUS, Z               ;Is the result Zero?
     goto    idle;
     movf    level, W
-    sublw   d'4'; if level is four
-    btfsc   STATUS, Z               ;Is the result Zero?
-    movf    level, W
     call    level_table
     movwf   numberOfBallsToCreate
+    movf    level, W
+    sublw   d'4'; if level is four
+    btfsc   STATUS, Z               ;Is the result Zero?
     goto    skip_level_configuration;
     movlw   b'00000010'
     movwf   LATH
