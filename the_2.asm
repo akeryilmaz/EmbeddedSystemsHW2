@@ -33,6 +33,7 @@ ball5Position res 1
 ball6Position res 1
 barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier comparison. 20 means bar is at 20 and 21'st points. 22 means bar is at 22nd and 23th points.
 timer1Modulo res 1; used for detecting where to spawn new ball
+tempBallPosition res 1
 
 ;*******************************************************************************
 ; Reset Vector
@@ -55,7 +56,7 @@ save_registers:
     movf 	PCLATH, w       ;Only required if using pages 1, 2 and/or 3
     movwf 	pclath_temp     ;Save PCLATH into W
     clrf 	PCLATH          ;Page zero, regardless of current page
-	return
+    return
 
 restore_registers:
     movf 	pclath_temp, w  ;Restore PCLATH
@@ -204,8 +205,7 @@ wait_rg0_release:
     bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
     movf    TMR1L,W
     movwf   timer1_initial_value
-    goto loop
-    
+    goto main_loop
     
 checkBall1   ;while moving the bar, check ball1, whether it is caught, missed or early to decide  
     movf barPosition
@@ -381,7 +381,7 @@ case22:		; case for bar=22
     ; -> goto <move the bar>
 ballUpdate
     btfss	timer0_state, 0 ; if enough time hasn't passed, return
-    return
+    goto	main_loop
     clrf	timer0_state	; enough time has passed rearrange timer and move balls
     decf	numberOfBallsToCreate
     btfss	STATUS, Z               ;Is the result Zero?
@@ -390,7 +390,7 @@ ballUpdate
     movf	level, W
     sublw	d'4'; if level is four
     btfss	STATUS, Z               ;Is the result Zero?
-    nop; TODO: return to initial configuraition
+    goto	idle;
     movf	level, W
     call	level_table
     movwf	numberOfBallsToCreate
@@ -422,55 +422,43 @@ timer_shitf_loop:
 	rrcf timer1_initial_value
 	decfsz iterator
 	goto timer_shitf_loop
-    btfss activeBalls, 0 ; if ball is active, skip
-    goto createBall1
-    btfss activeBalls, 1 ; if ball is active, skip
+    btfsc activeBalls, 0 ; if ball is not active, skip
     goto createBall2
-    btfss activeBalls, 2 ; if ball is active, skip
-    goto createBall3
-    btfss activeBalls, 3 ; if ball is active, skip
-    goto createBall4
-    btfss activeBalls, 4 ; if ball is active, skip
-    goto createBall5
-    btfss activeBalls, 5 ; if ball is active, skip
-    goto createBall6
-    return
-    
-createBall1:
     bsf activeBalls, 0
     movff timer1Modulo, ball1Position
-    call openCreatedBallLights
-    return
-    
+    goto finish_ball_creation
 createBall2:
+    btfsc activeBalls, 1 ; if ball is not active, skip
+    goto createBall3
     bsf activeBalls, 1
     movff timer1Modulo, ball2Position
-    call openCreatedBallLights
-    return
-
+    goto finish_ball_creation
 createBall3:
+    btfsc activeBalls, 2 ; if ball is not active, skip
+    goto createBall4
     bsf activeBalls, 2
     movff timer1Modulo, ball3Position
-    call openCreatedBallLights
-    return
-
+    goto finish_ball_creation
 createBall4:
+    btfsc activeBalls, 3 ; if ball is not active, skip
+    goto createBall5
     bsf activeBalls, 3
     movff timer1Modulo, ball4Position
-    call openCreatedBallLights
-    return
-    
+    goto finish_ball_creation
 createBall5:
+    btfsc activeBalls, 4 ; if ball is not active, skip
+    goto createBall6
     bsf activeBalls, 4
     movff timer1Modulo, ball5Position
-    call openCreatedBallLights
-    return
-    
+    goto finish_ball_creation
 createBall6:
+    btfsc activeBalls, 5 ; if ball is not active, skip
+    goto finish_ball_creation
     bsf activeBalls, 5
     movff timer1Modulo, ball6Position
+finish_ball_creation:
     call openCreatedBallLights
-    return
+    goto main_loop
     
 openCreatedBallLights
     movlw 0
@@ -615,8 +603,8 @@ idle:  ; restart part is here too
 main
     call initialize
     goto idle
-loop:
-    call moveTheBar
+main_loop:
+    goto moveTheBar
     call ballUpdate
-    goto loop
+    goto main_loop
     END
