@@ -697,7 +697,7 @@ ball6Update
     
 
 decreaseHealth
-    ;decf health,1
+    decf health,1
     movlw b'00000001'
     movwf LATH
     movf health, 0
