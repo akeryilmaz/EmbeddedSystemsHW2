@@ -547,7 +547,7 @@ createBall6:
     bsf activeBalls, 5
     movff timer1Modulo, ball6Position
 finish_ball_creation:
-    call openCreatedBallLights
+    call light_balls
     goto main_loop
     
 openCreatedBallLights
