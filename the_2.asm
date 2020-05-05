@@ -48,22 +48,22 @@ INT_VECT CODE     0x08
 
 ;;;;;;;;;;;; Register handling for proper operation of main program ;;;;;;;;;;;;
 save_registers:
-    movwf 	w_temp          ;Copy W to TEMP register
-    swapf 	STATUS, w       ;Swap status to be saved into W
-    clrf 	STATUS          ;bank 0, regardless of current bank, Clears IRP,RP1,RP0
-    movwf 	status_temp     ;Save status to bank zero STATUS_TEMP register
-    movf 	PCLATH, w       ;Only required if using pages 1, 2 and/or 3
-    movwf 	pclath_temp     ;Save PCLATH into W
-    clrf 	PCLATH          ;Page zero, regardless of current page
+    movwf   w_temp          ;Copy W to TEMP register
+    swapf   STATUS, w       ;Swap status to be saved into W
+    clrf    STATUS          ;bank 0, regardless of current bank, Clears IRP,RP1,RP0
+    movwf   status_temp     ;Save status to bank zero STATUS_TEMP register
+    movf    PCLATH, w       ;Only required if using pages 1, 2 and/or 3
+    movwf   pclath_temp     ;Save PCLATH into W
+    clrf    PCLATH          ;Page zero, regardless of current page
     return
 
 restore_registers:
-    movf 	pclath_temp, w  ;Restore PCLATH
-    movwf 	PCLATH          ;Move W into PCLATH
-    swapf 	status_temp, w  ;Swap STATUS_TEMP register into W
-    movwf 	STATUS          ;Move W into STATUS register
-    swapf 	w_temp, f       ;Swap W_TEMP
-    swapf 	w_temp, w       ;Swap W_TEMP into W
+    movf    pclath_temp, w  ;Restore PCLATH
+    movwf   PCLATH          ;Move W into PCLATH
+    swapf   status_temp, w  ;Swap STATUS_TEMP register into W
+    movwf   STATUS          ;Move W into STATUS register
+    swapf   w_temp, f       ;Swap W_TEMP
+    swapf   w_temp, w       ;Swap W_TEMP into W
     return
     
 ;*******************************************************************************
@@ -100,17 +100,17 @@ timer0_table
 isr:
     btfss INTCON, 2 ; TMR0IF is bit 2
     retfie ;some other interrupt, should not happen return
-    decf	timer0_counter, f              ;Timer interrupt handler part begins here by decrementing count variable
-    btfss	STATUS, Z               ;Is the result Zero?
-    goto	timer_interrupt_exit    ;No, then exit from interrupt service routine
-    clrf	timer0_counter                 ;Yes, then clear count variable
-    comf	timer0_state, f                ;Complement our state variable
+    decf    timer0_counter, f              ;Timer interrupt handler part begins here by decrementing count variable
+    btfss   STATUS, Z               ;Is the result Zero?
+    goto    timer_interrupt_exit    ;No, then exit from interrupt service routine
+    clrf    timer0_counter                 ;Yes, then clear count variable
+    comf    timer0_state, f                ;Complement our state variable
 
 timer_interrupt_exit:
-    bcf		INTCON, 2		    ;Clear TMROIF
-    movlw	d'61'               ;256-61=195; 195*256*100 = 4992000 instruction cycle;
-    movwf	TMR0
-    call	restore_registers   ;Restore STATUS and PCLATH registers to their state before interrupt occurs
+    bcf     INTCON, 2           ;Clear TMROIF
+    movlw   d'61'               ;256-61=195; 195*256*100 = 4992000 instruction cycle;
+    movwf   TMR0
+    call    restore_registers   ;Restore STATUS and PCLATH registers to their state before interrupt occurs
     retfie
     
 ;NOTE: the +-100 ms might be the same for all balls at each update or it might be unique to each ball at each update.
@@ -155,20 +155,20 @@ initialize
     clrf LATH
     clrf LATJ
     ;set variables
-    movlw 5
+    movlw d'5'
     movwf health
-    movlw 5
+    movlw d'5'
     movwf numberOfBallsToCreate
-    movlw 1
+    movlw d'1'
     movwf level
-    movlw 1
+    movlw d'1'
     movwf TRISH ; enable first 7segment display for setting health
     movlw b'01101101' ;5 for 7segment display
     movwf LATJ ; TODO we may need to movwf to TRISJ instead
     nop ;it says wait a while on the hw pdf
     clrf TRISH
     clrf LATJ
-    movlw 2
+    movlw d'2'
     movwf TRISH ;enable second 7segment display for setting level
     movlw b'00000110' ; 1 for 7segment display
     movwf LATJ ; TODO we may need to movwf to TRISJ instead
@@ -177,7 +177,7 @@ initialize
     clrf LATJ
     
     clrf activeBalls
-    movlw 20
+    movlw d'20'
     movwf barPosition
     movlw b'00100000'
     movwf LATA ; light the bar
@@ -187,7 +187,7 @@ initialize
 
 ; -> save timer1 value(16 bit)
 ; wait for RGO, if it is pressed and released goto loop
-wait_rg0_press:			
+wait_rg0_press:         
     btfsc pressed, 0
     goto wait_rg0_release
     btfss PORTG, 0
@@ -207,67 +207,67 @@ wait_rg0_release:
     goto main_loop
     
 checkBall1   ;while moving the bar, check ball1, whether it is caught, missed or early to decide  
-    movf barPosition
-    subfwb ball1Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball1Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball1Position, 0 ; store in W
+    subwf ball1Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
     return
     
 checkBall2   ;while moving the bar, check ball2, whether it is caught, missed or early to decide
-    movf barPosition
-    subfwb ball2Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball2Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 1 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball2Position, 0 ; store in W
+    subwf ball2Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 1 ;(bar is on the ball, deactivate the ball)
     return
     
 checkBall3  ;while moving the bar, check ball3, whether it is caught, missed or early to decide
-    movf barPosition
-    subfwb ball3Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball3Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 2 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball3Position, 0 ; store in W
+    subwf ball3Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 2 ;(bar is on the ball, deactivate the ball)
     return
     
 checkBall4  ;while moving the bar, check ball4, whether it is caught, missed or early to decide
-    movf barPosition
-    subfwb ball4Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball4Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 3 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball4Position, 0 ; store in W
+    subwf ball4Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 3 ;(bar is on the ball, deactivate the ball)
     return
     
 checkBall5   ;while moving the bar, check ball5, whether it is caught, missed or early to decide
-    movf barPosition
-    subfwb ball5Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball5Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 4 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball5Position, 0 ; store in W
+    subwf ball5Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 4 ;(bar is on the ball, deactivate the ball)
     return
     
 checkBall6   ;while moving the bar, check ball6, whether it is caught, missed or early to decide
-    movf barPosition
-    subfwb ball6Position, 0 ; store in W
+    movf barPosition, 0
+    subwf ball6Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 5 ;(bar is on the ball, deactivate the ball)
     incf barPosition, 0 ; store in W
-    subfwb ball6Position, 0 ; store in W
+    subwf ball6Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 5 ;(bar is on the ball, deactivate the ball)
     return
@@ -286,117 +286,117 @@ moveTheBar
     return
     
 moveRight:
-	movlw 22
-	cpfslt barPosition ; skip if we are already on the rightmost position
-	return ;(barPosition=22)
-	incf barPosition
-	goto lightTheBar
-	
-moveLeft:
-	movlw 20
-	cpfsgt barPosition ;skip if we are already on the leftmost position
-	return ;(barPosition=20)
-	decf barPosition
-	goto lightTheBar
-	
-lightTheBar:
-	;TODO light the bar
-	; only the 5th light of A-F will be on (don't forget to close the previous light positions)
-	
-	movlw b'00000000' ; reset led not to keep previous data (we can change the design)
-	movwf	LATA
-	movwf	LATB
-	movwf	LATC
-	movwf	LATD    
+    movlw d'22'
+    cpfslt barPosition ; skip if we are already on the rightmost position
+    return ;(barPosition=22)
+    incf barPosition
+    goto lightTheBar
     
-case20:		; case for bar=20
-	    movlw 20
-	    cpfseq barPosition
-	    goto case21
-	    movlw b'00100000'
-	    movwf LATA
-	    movwf LATB
-	    call checkBall1
-	    call checkBall2
-	    call checkBall3
-	    call checkBall4
-	    call checkBall5
-	    call checkBall6
-	    return
-case21:		; case for bar=21
-	    movlw 21
-	    cpfseq barPosition
-	    goto case22
-	    movlw b'00100000'
-	    movwf LATB
-	    movwf LATC
-	    call checkBall1
-	    call checkBall2
-	    call checkBall3
-	    call checkBall4
-	    call checkBall5
-	    call checkBall6
-	    return
+moveLeft:
+    movlw d'20'
+    cpfsgt barPosition ;skip if we are already on the leftmost position
+    return ;(barPosition=20)
+    decf barPosition
+    goto lightTheBar
+    
+lightTheBar:
+    ;TODO light the bar
+    ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
+    
+    movlw b'00000000' ; reset led not to keep previous data (we can change the design)
+    movwf   LATA
+    movwf   LATB
+    movwf   LATC
+    movwf   LATD    
+    
+case20:     ; case for bar=20
+        movlw d'20'
+        cpfseq barPosition
+        goto case21
+        movlw b'00100000'
+        movwf LATA
+        movwf LATB
+        call checkBall1
+        call checkBall2
+        call checkBall3
+        call checkBall4
+        call checkBall5
+        call checkBall6
+        return
+case21:     ; case for bar=21
+        movlw d'21'
+        cpfseq barPosition
+        goto case22
+        movlw b'00100000'
+        movwf LATB
+        movwf LATC
+        call checkBall1
+        call checkBall2
+        call checkBall3
+        call checkBall4
+        call checkBall5
+        call checkBall6
+        return
 
-case22:		; case for bar=22
-	    movlw 22
-	    cpfseq barPosition
-	    goto case20
-	    movlw b'00100000'
-	    movwf LATC
-	    movwf LATD
-	    call checkBall1
-	    call checkBall2
-	    call checkBall3
-	    call checkBall4
-	    call checkBall5
-	    call checkBall6
-	    return
-	
-	
+case22:     ; case for bar=22
+        movlw d'22'
+        cpfseq barPosition
+        goto case20
+        movlw b'00100000'
+        movwf LATC
+        movwf LATD
+        call checkBall1
+        call checkBall2
+        call checkBall3
+        call checkBall4
+        call checkBall5
+        call checkBall6
+        return
+    
+    
 ; move the active balls
     ; -> if "ball update period" +-100ms passed
-    ;	-> for each active ball(can find with "15bit active balls")
-    ;	    -> add 6 to the corresponding "6bit ball location"
+    ;   -> for each active ball(can find with "15bit active balls")
+    ;       -> add 6 to the corresponding "6bit ball location"
     ; -> goto <check active balls>
 
     ; check active balls
     ; -> for each active ball(can find with "15bit active balls")
-    ;	-> if "6bit ball location" >= 36, i.e ball hasn't been caught
-    ;	    -> decrement "health" and update 7segment display
-    ;	    -> if "health" == 0, goto <restart>	----------- <- may also goto <lose> if we want to wait for sometime
-    ;	    -> deactivate the ball by updating "15bit active balls"
-    ;	-> else if "6bit ball location" >=30 & ball is on the bar, i.e ball has been caught
-    ;	    -> deactivate the ball by updating "15bit active balls"
+    ;   -> if "6bit ball location" >= 36, i.e ball hasn't been caught
+    ;       -> decrement "health" and update 7segment display
+    ;       -> if "health" == 0, goto <restart> ----------- <- may also goto <lose> if we want to wait for sometime
+    ;       -> deactivate the ball by updating "15bit active balls"
+    ;   -> else if "6bit ball location" >=30 & ball is on the bar, i.e ball has been caught
+    ;       -> deactivate the ball by updating "15bit active balls"
     ; -> if "15 bit active balls" == 0, goto <next level>
     ; -> goto <create the balls>
 
     ; create the balls
     ; -> if we need to create more balls and  "ball update period" ms passed
-    ;	-> find a non active ball index from "15bit active balls". (can use "number of spawned balls")
-    ;	    -> Set that index to 1.
-    ;	    -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
-    ;	    -> increase "number of spawned balls" by 1
+    ;   -> find a non active ball index from "15bit active balls". (can use "number of spawned balls")
+    ;       -> Set that index to 1.
+    ;       -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
+    ;       -> increase "number of spawned balls" by 1
     ; -> goto <move the bar>
 ballUpdate
-    btfss	timer0_state, 0 ; if enough time hasn't passed, return
-    goto	main_loop
-    clrf	timer0_state	; enough time has passed rearrange timer and move balls
-    decf	numberOfBallsToCreate
-    btfss	STATUS, Z               ;Is the result Zero?
-    goto	skip_level_configuration
-    incf	level 
-    movf	level, W
-    sublw	d'4'; if level is four
-    btfsc	STATUS, Z               ;Is the result Zero?
-    goto	idle;
-    movf	level, W
-    call	level_table
-    movwf	numberOfBallsToCreate
+    btfss   timer0_state, 0 ; if enough time hasn't passed, return
+    goto    main_loop
+    clrf    timer0_state    ; enough time has passed rearrange timer and move balls
+    decf    numberOfBallsToCreate
+    btfss   STATUS, Z               ;Is the result Zero?
+    goto    skip_level_configuration
+    incf    level 
+    movf    level, W
+    sublw   d'4'; if level is four
+    btfsc   STATUS, Z               ;Is the result Zero?
+    goto    idle;
+    movf    level, W
+    call    level_table
+    movwf   numberOfBallsToCreate
 skip_level_configuration:
-    movf	level, W
-    call	timer0_table
-    movwf	timer0_counter
+    movf    level, W
+    call    timer0_table
+    movwf   timer0_counter
     ;update balls
     btfsc activeBalls, 0 ; if ball not active, skip
     call ball1Update
@@ -418,9 +418,9 @@ skip_level_configuration:
     call level_shift_table
     movwf iterator
 timer_shitf_loop:
-	rrcf timer1_initial_value
-	decfsz iterator
-	goto timer_shitf_loop
+    rrcf timer1_initial_value
+    decfsz iterator
+    goto timer_shitf_loop
     btfsc activeBalls, 0 ; if ball is not active, skip
     goto createBall2
     bsf activeBalls, 0
@@ -458,19 +458,18 @@ createBall6:
 finish_ball_creation:
     call openCreatedBallLights
     goto main_loop
-    
 openCreatedBallLights
     movlw 0
     cpfsgt timer1Modulo ; if timer1Modulo <= 0 LATA 
     bsf LATA,0
     cpfsgt timer1Modulo
     return
-    movlw 1
+    movlw d'1'
     cpfsgt timer1Modulo ; if timer1Modulo <= 1 LATB
     bsf LATB,0
     cpfsgt timer1Modulo
     return
-    movlw 2
+    movlw d'2'
     cpfsgt timer1Modulo ; if timer1Modulo <= 2 LATC
     bsf LATC,0
     cpfsgt timer1Modulo
@@ -480,85 +479,85 @@ openCreatedBallLights
     return
     
 ball1Update
-    movlw 4
+    movlw d'4'
     addwf ball1Position
     call checkBall1
     btfss activeBalls, 0 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball1Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball1Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 0
     return
 
 ball2Update
-    movlw 4
+    movlw d'4'
     addwf ball2Position
     call checkBall2
     btfss activeBalls, 1 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball2Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball2Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 1
     return
 
 ball3Update
-    movlw 4
+    movlw d'4'
     addwf ball3Position
     call checkBall3
     btfss activeBalls, 2 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball3Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball3Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 2
     return
    
 ball4Update
-    movlw 4
+    movlw d'4'
     addwf ball4Position
     call checkBall4
     btfss activeBalls, 3 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball4Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball4Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 3
     return 
     
 ball5Update
-    movlw 4
+    movlw d'4'
     addwf ball5Position
     call checkBall5
     btfss activeBalls, 4 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball5Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball5Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 4
     return
     
 ball6Update
-    movlw 4
+    movlw d'4'
     addwf ball6Position
     call checkBall6
     btfss activeBalls, 5 ; if the ball is caught return
     return
-    movlw 24
+    movlw d'24'
     cpfslt ball6Position ; if ball position <24 don't decrease health
     call decreaseHealth
-    movlw 24
+    movlw d'24'
     cpfslt ball6Position ; if ball position <24 don't deactive the ball
     bcf activeBalls, 5
     return
@@ -592,9 +591,9 @@ idle:  ; restart part is here too
     ; TODO set "15 bit active balls" to 0
     ; TODO set "ball update period" to its new value
     clrf pressed
-    movlw 1
+    movlw d'1'
     movwf level
-    movlw 5
+    movlw d'5'
     movwf health
     clrf LATG
     goto wait_rg0_press
