@@ -33,6 +33,7 @@ ball6Position res 1
 barPosition res 1 ; Leftmost bar position. Between 20-22(inclusive) for easier comparison. 20 means bar is at 20 and 21'st points. 22 means bar is at 22nd and 23th points.
 timer1Modulo res 1; used for detecting where to spawn new ball
 tempBallPosition res 1
+barMoveDirection ; 1 if right, 0 if left
 
 ;*******************************************************************************
 ; Reset Vector
@@ -275,10 +276,11 @@ wait_rg0_release:
     goto main_loop
     
 light_balls
-    clrf LATA
-    clrf LATB
-    clrf LATC
-    clrf LATD
+    movlw b'00100000'
+    andwf LATA
+    andwf LATB
+    andwf LATC
+    andwf LATD
     btfss activeBalls, 0 ; if ball is active, skip
     goto ligthball2
     movf ball1Position, W
@@ -394,13 +396,36 @@ moveRight:
     movlw d'22'
     cpfslt barPosition ; skip if we are already on the rightmost position
     return ;(barPosition=22)
-    incf barPosition
-    goto lightTheBar
+    bsf barMoveDirection,0
+    goto resetBarLights
     
 moveLeft:
     movlw d'20'
     cpfsgt barPosition ;skip if we are already on the leftmost position
     return ;(barPosition=20)
+    bcf barMoveDirection,0
+    goto resetBarLights
+    
+resetBarLights:
+    movlw d'20' 
+    cpfsgt barPosition ; barPosition  = 20
+    bcf LATA,5
+    cpfsgt barPosition ; barPosition  = 20
+    bcf LATB,5
+    movlw d'21'
+    subwf barPosition, 0 ; store in W
+    btfsc STATUS,Z ; barPosition = 21
+    bcf LATB,5
+    btfsc STATUS,Z ; barPosition = 21
+    bcf LATC,5
+    movlw d'22'
+    cpfslt barPosition 
+    bcf LATC,5 ;barPosition = 22
+    cpfslt barPosition 
+    bcf LATD,5 ;barPosition = 22
+    btfsc barMoveDirection,0 ; 0 = move left ;; 1 = move right
+    incf barPosition
+    btfss barMoveDirection,0 ; 0 = move left ;; 1 = move right
     decf barPosition
     goto lightTheBar
     
@@ -408,19 +433,12 @@ lightTheBar:
     ;TODO light the bar
     ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
     
-    movlw b'00000000' ; reset led not to keep previous data (we can change the design)
-    movwf   LATA
-    movwf   LATB
-    movwf   LATC
-    movwf   LATD    
-    
 case20:     ; case for bar=20
         movlw d'20'
         cpfseq barPosition
         goto case21
-        movlw b'00100000'
-        movwf LATA
-        movwf LATB
+        bsf LATA,5
+        bsf LATB,5
         call checkBall1
         call checkBall2
         call checkBall3
@@ -432,9 +450,8 @@ case21:     ; case for bar=21
         movlw d'21'
         cpfseq barPosition
         goto case22
-        movlw b'00100000'
-        movwf LATB
-        movwf LATC
+        bsf LATB,5
+        bsf LATC,5
         call checkBall1
         call checkBall2
         call checkBall3
@@ -447,9 +464,8 @@ case22:     ; case for bar=22
         movlw d'22'
         cpfseq barPosition
         goto case20
-        movlw b'00100000'
-        movwf LATC
-        movwf LATD
+        bsf LATC,5
+        bsf LATD,5
         call checkBall1
         call checkBall2
         call checkBall3
@@ -483,7 +499,7 @@ case22:     ; case for bar=22
     ;       -> Set the "6bit ball location" corresponding to that index to [0,5] based on "timer1 starting value" & timer0
     ;       -> increase "number of spawned balls" by 1
     ; -> goto <move the bar>
-ballUpdate
+ballUpdate:
     btfss   timer0_state, 0 ; if enough time hasn't passed, return
     goto    main_loop
     clrf    timer0_state    ; enough time has passed rearrange timer and move balls
@@ -738,6 +754,9 @@ main
     goto idle
 main_loop:
     call moveTheBar
+    movlw d'0'
+    cpfsgt health ; if health > 0 skip
+    goto idle 
     goto ballUpdate
     goto main_loop
     END
