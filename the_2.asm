@@ -408,16 +408,16 @@ skip_level_configuration:
     ;create a new ball
     btfss activeBalls, 0 ; if ball is active, skip
     goto createBall1
-;    btfss activeBalls, 1 ; if ball is active, skip
-;    goto createBall2
-;    btfss activeBalls, 2 ; if ball is active, skip
-;    goto createBall3
-;    btfss activeBalls, 3 ; if ball is active, skip
-;    goto createBall4
-;    btfss activeBalls, 4 ; if ball is active, skip
-;    goto createBall5
-;    btfss activeBalls, 5 ; if ball is active, skip
-;    goto createBall6
+    btfss activeBalls, 1 ; if ball is active, skip
+    goto createBall2
+    btfss activeBalls, 2 ; if ball is active, skip
+    goto createBall3
+    btfss activeBalls, 3 ; if ball is active, skip
+    goto createBall4
+    btfss activeBalls, 4 ; if ball is active, skip
+    goto createBall5
+    btfss activeBalls, 5 ; if ball is active, skip
+    goto createBall6
     goto finishBallUpdate
     
     finishBallUpdate:
@@ -432,8 +432,7 @@ skip_level_configuration:
 	rrncf timer1_initial_value
 	cpfsgt level  
 	rrncf timer1_initial_value
-	return 
-    return ;not sure if the behaviour is correct. put for completeness.
+	return
 
 createBall1:
     bsf activeBalls, 0
@@ -441,26 +440,73 @@ createBall1:
     andwf timer1_initial_value, 0; store in W
     movwf timer1Modulo
     movff timer1Modulo, ball1Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+    
+createBall2:
+    bsf activeBalls, 1
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball2Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+
+createBall3:
+    bsf activeBalls, 2
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball3Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+
+createBall4:
+    bsf activeBalls, 3
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball4Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+    
+createBall5:
+    bsf activeBalls, 4
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball5Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+    
+createBall6:
+    bsf activeBalls, 5
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movff timer1Modulo, ball6Position
+    call openCreatedBallLights
+    goto finishBallUpdate
+    
+openCreatedBallLights
     movlw 0
-    cpfsgt timer1Modulo ; if timer1Modulo = 0 LATA 
+    cpfsgt timer1Modulo ; if timer1Modulo <= 0 LATA 
     bsf LATA,0
     cpfsgt timer1Modulo
-    goto finishBallUpdate
+    return
     movlw 1
-    cpfsgt timer1Modulo ; if timer1Modulo = 1 LATB
+    cpfsgt timer1Modulo ; if timer1Modulo <= 1 LATB
     bsf LATB,0
     cpfsgt timer1Modulo
-    goto finishBallUpdate
+    return
     movlw 2
-    cpfsgt timer1Modulo ; if timer1Modulo = 2 LATC
+    cpfsgt timer1Modulo ; if timer1Modulo <= 2 LATC
     bsf LATC,0
     cpfsgt timer1Modulo
-    goto finishBallUpdate
-    movlw 3
-    cpfsgt timer1Modulo ; if timer1Modulo = 3 LATD
+    return
+    ; ELSE === if timer1Modulo <= 3 LATD
     bsf LATD,0
-    cpfsgt timer1Modulo
-    goto finishBallUpdate
+    return
     
 ball1Update
     movlw 4
