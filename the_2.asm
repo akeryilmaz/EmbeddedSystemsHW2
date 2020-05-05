@@ -210,14 +210,6 @@ wait_rg0_release:
     subfwb ball1Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 0 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball1Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball1Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 0
     return
     
 checkBall2   ;while moving the bar, check ball2, whether it is caught, missed or early to decide
@@ -229,14 +221,6 @@ checkBall2   ;while moving the bar, check ball2, whether it is caught, missed or
     subfwb ball2Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 1 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 1 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball2Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball2Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 1
     return
     
 checkBall3  ;while moving the bar, check ball3, whether it is caught, missed or early to decide
@@ -248,14 +232,6 @@ checkBall3  ;while moving the bar, check ball3, whether it is caught, missed or 
     subfwb ball3Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 2 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 2 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball3Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball3Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 2
     return
     
 checkBall4  ;while moving the bar, check ball4, whether it is caught, missed or early to decide
@@ -267,14 +243,6 @@ checkBall4  ;while moving the bar, check ball4, whether it is caught, missed or 
     subfwb ball4Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 3 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 3 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball4Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball4Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 3
     return
     
 checkBall5   ;while moving the bar, check ball5, whether it is caught, missed or early to decide
@@ -286,14 +254,6 @@ checkBall5   ;while moving the bar, check ball5, whether it is caught, missed or
     subfwb ball5Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 4 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 4 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball5Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball5Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 4
     return
     
 checkBall6   ;while moving the bar, check ball6, whether it is caught, missed or early to decide
@@ -305,14 +265,6 @@ checkBall6   ;while moving the bar, check ball6, whether it is caught, missed or
     subfwb ball6Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
     bcf activeBalls, 5 ;(bar is on the ball, deactivate the ball)
-    btfss activeBalls, 5 ; if the ball is caught return
-    return
-    movlw 24
-    cpfslt ball6Position ; if ball position <24 don't decrease health
-    call decreaseHealth
-    movlw 24
-    cpfslt ball6Position ; if ball position <24 don't deactive the ball
-    bcf activeBalls, 5
     return
     
    
@@ -504,14 +456,7 @@ createBall1:
 ball1Update
     movlw 4
     addwf ball1Position
-    movf barPosition
-    subfwb ball1Position, 0 ; store in W
-    btfsc STATUS,Z ; if result is not zero skip
-    bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
-    incf barPosition, 0 ; store in W
-    subfwb ball1Position, 0 ; store in W
-    btfsc STATUS,Z ; if result is not zero skip
-    bcf activeBalls, 0 ;(bar is on the ball, deactivate the ball)
+    call checkBall1
     btfss activeBalls, 0 ; if the ball is caught return
     return
     movlw 24
