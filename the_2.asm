@@ -436,7 +436,10 @@ ballUpdate
     movf	level, W
     call	level_table
     movwf	numberOfBallsToCreate
-    
+skip_level_configuration:
+    movf	level, W
+    call	timer0_table
+    movwf	timer0_counter   
     ;create a new ball
     btfss activeBalls, 0 ; if ball is active, skip
     goto createBall1
@@ -466,10 +469,7 @@ ballUpdate
 	rrncf timer1_initial_value
 	return 
     
-skip_level_configuration:
-    movf	level, W
-    call	timer0_table
-    movwf	timer0_counter
+
     btfsc activeBalls, 0 ; if ball not active, skip
     call ball1Update
     return ;not sure if the behaviour is correct. put for completeness.

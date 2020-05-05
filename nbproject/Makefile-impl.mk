@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=EmbeddedSystemsHW2
+PROJECTNAME=the2
 
 # Active Configuration
 DEFAULTCONF=default
