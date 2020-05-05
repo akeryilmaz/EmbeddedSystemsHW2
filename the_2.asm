@@ -667,8 +667,14 @@ ball6Update
     bcf activeBalls, 5
     return
     
-; TODO decrease health
+
 decreaseHealth
+    decf health, 1
+    movlw b'00000001'
+    movwf LATH
+    movf health, 0
+    call 7_segment_table
+    movwf LATJ
     return
     
 ; next level
