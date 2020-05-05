@@ -70,7 +70,7 @@ restore_registers:
 ; MAIN PROGRAM
 ;*******************************************************************************
 
-level_shift_table:
+level_shift_table
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
     ADDWF   PCL, F  ; modify program counter
@@ -79,7 +79,7 @@ level_shift_table:
     RETLW d'3' ;2 -> shift 3
     RETLW d'5' ;3 -> shift 5
     
-level_table:
+level_table
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
     ADDWF   PCL, F  ; modify program counter
@@ -96,6 +96,60 @@ timer0_table
     RETLW d'100' ;1 -> 100*4,992 = 499,2 ms
     RETLW d'80' ;2 -> 80*4,992 = 399,39 ms
     RETLW d'60' ;3 -> 60*4,992 = 299,52 ms
+       
+ball_position_light_table ;Assume a valid ball position on wreg
+    rlncf   WREG ; multiply wreg by 2
+    MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
+    RLNCF   WREG, W ; multiply index X2
+    ADDWF   PCL, F  ; modify program counter
+    bsf	    LATA,0
+    return
+    bsf	    LATB,0
+    return
+    bsf	    LATC,0
+    return
+    bsf	    LATD,0
+    return
+    bsf	    LATA,1
+    return
+    bsf	    LATB,1
+    return
+    bsf	    LATC,1
+    return
+    bsf	    LATD,1
+    return
+    bsf	    LATA,2
+    return
+    bsf	    LATB,2
+    return
+    bsf	    LATC,2
+    return
+    bsf	    LATD,2
+    return
+    bsf	    LATA,3
+    return
+    bsf	    LATB,3
+    return
+    bsf	    LATC,3
+    return
+    bsf	    LATD,3
+    return
+    bsf	    LATA,4
+    return
+    bsf	    LATB,4
+    return
+    bsf	    LATC,4
+    return
+    bsf	    LATD,4
+    return
+    bsf	    LATA,5
+    return
+    bsf	    LATB,5
+    return
+    bsf	    LATC,5
+    return
+    bsf	    LATD,5
+    return
     
 isr:
     btfss INTCON, 2 ; TMR0IF is bit 2
@@ -205,6 +259,43 @@ wait_rg0_release:
     movf    TMR1L,W
     movwf   timer1_initial_value
     goto main_loop
+    
+light_balls
+    clrf LATA
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    btfss activeBalls, 0 ; if ball is active, skip
+    goto ligthball2
+    movf ball1Position, W
+    call ball_position_light_table
+ligthball2:
+    btfss activeBalls, 1 ; if ball is active, skip
+    goto ligthball3
+    movf ball2Position, W
+    call ball_position_light_table
+ligthball3:
+    btfss activeBalls, 2 ; if ball is active, skip
+    goto ligthball4
+    movf ball3Position, W
+    call ball_position_light_table
+ligthball4:
+    btfss activeBalls, 3 ; if ball is active, skip
+    goto ligthball5
+    movf ball4Position, W
+    call ball_position_light_table
+ligthball5:
+    btfss activeBalls, 4 ; if ball is active, skip
+    goto ligthball6
+    movf ball5Position, W
+    call ball_position_light_table
+ligthball6:
+    btfss activeBalls, 5 ; if ball is active, skip
+    goto finish_ligth_ball
+    movf ball6Position, W
+    call ball_position_light_table
+finish_ligth_ball:
+    return
     
 checkBall1   ;while moving the bar, check ball1, whether it is caught, missed or early to decide  
     movf barPosition
