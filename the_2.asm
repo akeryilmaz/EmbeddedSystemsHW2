@@ -281,11 +281,11 @@ wait_rg0_release:
     goto main_loop
     
 light_balls
-    movlw b'00100000'
-    andwf LATA
-    andwf LATB
-    andwf LATC
-    andwf LATD
+    clrf LATA
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    call lightTheBar
     btfss activeBalls, 0 ; if ball is active, skip
     goto ligthball2
     movf ball1Position, W
@@ -445,9 +445,10 @@ resetBarLights:
     incf barPosition
     btfss barMoveDirection,0 ; 0 = move left ;; 1 = move right
     decf barPosition
-    goto lightTheBar
+    call lightTheBar
+    return
     
-lightTheBar:
+lightTheBar
     ; only the 5th light of A-F will be on (don't forget to close the previous light positions)
     
 case20:     ; case for bar=20
