@@ -97,7 +97,7 @@ timer0_table
     RETLW d'80' ;2 -> 80*4,992 = 399,39 ms
     RETLW d'60' ;3 -> 60*4,992 = 299,52 ms
     
-7_segment_table
+segment_table
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
     ADDWF   PCL, F  ; modify program counter
@@ -501,7 +501,7 @@ ballUpdate
     movlw   b'00000010'
     movwf   LATH
     movf    level, W
-    call    7_segment_table
+    call    segment_table
     movwf   LATJ
 skip_level_configuration:
     movf    level, W
@@ -679,7 +679,7 @@ decreaseHealth
     movlw b'00000001'
     movwf LATH
     movf health, 0
-    call 7_segment_table
+    call segment_table
     movwf LATJ
     return
     
@@ -711,15 +711,27 @@ idle:  ; restart part is here
     movwf TMR0L; 
     movlw d'100'; 
     movwf timer0_counter
-    ; TODO set "ball update period" to its new valuetoo
     clrf timer0_state
-    clrf activeballs
+    clrf activeBalls
     clrf pressed
     movlw d'1'
     movwf level
     movlw d'5'
     movwf health
+    ; TODO bar position should be reset
     clrf LATG
+    ;7-segent display for health
+    movlw b'00000001'
+    movwf LATH
+    movf health, 0
+    call segment_table
+    movwf LATJ
+    ;7-segent display for level
+    movlw   b'00000010'
+    movwf   LATH
+    movf    level, W
+    call    segment_table
+    movwf   LATJ
     goto wait_rg0_press
 main
     call initialize
