@@ -4,15 +4,10 @@
 ;*******************************************************************************
 ; Variables & Constants
 ;*******************************************************************************
-w_temp  udata 0x23
-w_temp
 
-status_temp udata 0x24
-status_temp
-
-pclath_temp udata 0x25
-pclath_temp
-    
+w_temp res 1
+status_temp res 1
+pclath_temp res 1
 iterator res 1
     ; variables 
     ; health
@@ -28,7 +23,6 @@ level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer0_counter res 1
 timer0_state res 1 ; this is set when the required time has passed for each level
 timer1_initial_value res 1
-numberOfSpawnedBalls res 1
 numberOfBallsToCreate res 1
 activeBalls res 1 ; 6 balls can be active at 1 time
 ball1Position res 1 ; 0 indicates top left, 23 indicates bottom right. Add 4 per update.
@@ -182,7 +176,6 @@ initialize
     clrf TRISH
     clrf LATJ
     
-    clrf numberOfSpawnedBalls
     clrf activeBalls
     movlw 20
     movwf barPosition
@@ -442,42 +435,42 @@ timer_shitf_loop:
     btfss activeBalls, 5 ; if ball is active, skip
     goto createBall6
     return
-
+    
 createBall1:
     bsf activeBalls, 0
     movff timer1Modulo, ball1Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
     
 createBall2:
     bsf activeBalls, 1
     movff timer1Modulo, ball2Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
 
 createBall3:
     bsf activeBalls, 2
     movff timer1Modulo, ball3Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
 
 createBall4:
     bsf activeBalls, 3
     movff timer1Modulo, ball4Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
     
 createBall5:
     bsf activeBalls, 4
     movff timer1Modulo, ball5Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
     
 createBall6:
     bsf activeBalls, 5
     movff timer1Modulo, ball6Position
     call openCreatedBallLights
-    goto finishBallUpdate
+    return
     
 openCreatedBallLights
     movlw 0
@@ -612,7 +605,6 @@ idle:  ; restart part is here too
     ; TODO set "15 bit active balls" to 0
     ; TODO set "ball update period" to its new value
     clrf pressed
-    clrf numberOfSpawnedBalls 
     movlw 1
     movwf level
     movlw 5
