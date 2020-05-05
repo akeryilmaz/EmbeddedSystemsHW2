@@ -386,11 +386,24 @@ checkBall6   ;while moving the bar, check ball6, whether it is caught, missed or
 ; -> if RG3 is pressed & bar is not at RA5-RB5 move left. Reset RG3 to 0 and goto <move the active balls>.
 ; ->goto <move the active balls>
 moveTheBar
-    btfsc PORTG,2 ; if RG2 is NOT pressed don't execute move right
+   check_rg2_press:         
+    btfss PORTG, 2
+    goto check_rg3_press
+    
+   check_rg2_release:
+    btfsc PORTG, 2
+    goto check_rg2_release
     goto moveRight
-    btfsc PORTG,3 ; if RG3 is NOT pressed don't execute move left
-    goto moveLeft
+    
+   check_rg3_press:         
+    btfss PORTG, 3
     return
+     
+   check_rg3_release:
+    btfsc PORTG, 3
+    goto check_rg3_release
+    goto moveLeft
+   
     
 moveRight:
     movlw d'22'
