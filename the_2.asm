@@ -530,12 +530,12 @@ ballUpdate:
     btfsc   STATUS, Z               ;Is the result Zero?
     goto    idle;
     movf    level, W
+    call    level_table
+    movwf   numberOfBallsToCreate
+    movf    level, W
     sublw   d'4'; if level is four
     btfsc   STATUS, Z               ;Is the result Zero?
     goto    skip_level_configuration;
-    movf    level, W
-    call    level_table
-    movwf   numberOfBallsToCreate
     movlw   b'00000010'
     movwf   LATH
     movf    level, W
@@ -697,7 +697,7 @@ ball6Update
     
 
 decreaseHealth
-    decf health,1
+    ;decf health,1
     movlw b'00000001'
     movwf LATH
     movf health, 0
