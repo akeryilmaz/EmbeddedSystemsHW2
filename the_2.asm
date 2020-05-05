@@ -13,6 +13,7 @@ status_temp
 pclath_temp udata 0x25
 pclath_temp
     
+iterator res 1
     ; variables 
     ; health
     ; level
@@ -26,6 +27,7 @@ health res 1; 7 segment display of health is at portH.0 -> b'00000001' = 1
 level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
 timer0_counter res 1
 timer0_state res 1 ; this is set when the required time has passed for each level
+timer1_initial_value res 1
 numberOfSpawnedBalls res 1
 numberOfBallsToCreate res 1
 activeBalls res 1 ; 6 balls can be active at 1 time
@@ -74,6 +76,14 @@ restore_registers:
 ; MAIN PROGRAM
 ;*******************************************************************************
 
+level_shift_table:
+    MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
+    RLNCF   WREG, W ; multiply index X2
+    ADDWF   PCL, F  ; modify program counter
+    RETLW 0 ;should not happen
+    RETLW d'1' ;1 -> shitf 1
+    RETLW d'3' ;2 -> shift 3
+    RETLW d'5' ;3 -> shift 5
     
 level_table:
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
@@ -121,7 +131,7 @@ timer_interrupt_exit:
 ; set "ball update period" to its new value
 ; -> goto <start>
 initialize
-    ;setup timer
+    ;setup timers
     clrf TMR0; TMR0 = 0
     clrf INTCON; Interrupts disabled for now
     movlw b'11010111'; enable timer, 8-bit operation, ; falling edge, select prescaler ; with 1:256, internal source
@@ -130,6 +140,8 @@ initialize
     movwf TMR0L; counter can count x*256 cycles -> x*256*10^-4 ms -> x=195 for 4,992 ms -> 256-195 = 61 = '0x3d'
     movlw d'100'; 100*4,992= 499,2 ms is passed to the counter to count ~500ms for level1
     movwf timer0_counter
+    movlw b'01000101'
+    movwf T1CON
     ;setup ports, inputs-outputs etc.
     movlw 0x0F
     movwf ADCON1 ; set A/D conversion
@@ -197,11 +209,12 @@ wait_rg0_release:
     movlw   b'11100000' ;Enable Global, peripheral, Timer0 by setting GIE, PEIE, TMR0IE bits to 1
     movwf   INTCON
     bsf     T0CON, 7    ;Enable Timer0 by setting TMR0ON to 1
-    ;TODO save timer1 value
+    movf    TMR1L,W
+    movwf   timer1_initial_value
     goto loop
     
     
-  checkBall1   ;while moving the bar, check ball1, whether it is caught, missed or early to decide  
+checkBall1   ;while moving the bar, check ball1, whether it is caught, missed or early to decide  
     movf barPosition
     subfwb ball1Position, 0 ; store in W
     btfsc STATUS,Z ; if result is not zero skip
@@ -406,6 +419,16 @@ skip_level_configuration:
     btfsc activeBalls, 5 ; if ball not active, skip
     call ball6Update
     ;create a new ball
+    movlw b'00000011' ; for modulo
+    andwf timer1_initial_value, 0; store in W
+    movwf timer1Modulo
+    movf level, W
+    call level_shift_table
+    movwf iterator
+timer_shitf_loop:
+	rrcf timer1_initial_value
+	decfsz iterator
+	goto timer_shitf_loop
     btfss activeBalls, 0 ; if ball is active, skip
     goto createBall1
     btfss activeBalls, 1 ; if ball is active, skip
@@ -418,72 +441,40 @@ skip_level_configuration:
     goto createBall5
     btfss activeBalls, 5 ; if ball is active, skip
     goto createBall6
-    goto finishBallUpdate
-    
-    finishBallUpdate:
-	rrncf timer1_initial_value ; for all levels shift 1 right
-	movlw 1
-	cpfsgt level  ; if level >1 shift right 2 more times
-	rrncf timer1_initial_value
-	cpfsgt level  
-	rrncf timer1_initial_value
-	movlw 2
-	cpfsgt level  ; if level >2 shift right 2 more times
-	rrncf timer1_initial_value
-	cpfsgt level  
-	rrncf timer1_initial_value
-	return
+    return
 
 createBall1:
     bsf activeBalls, 0
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball1Position
     call openCreatedBallLights
     goto finishBallUpdate
     
 createBall2:
     bsf activeBalls, 1
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball2Position
     call openCreatedBallLights
     goto finishBallUpdate
 
 createBall3:
     bsf activeBalls, 2
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball3Position
     call openCreatedBallLights
     goto finishBallUpdate
 
 createBall4:
     bsf activeBalls, 3
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball4Position
     call openCreatedBallLights
     goto finishBallUpdate
     
 createBall5:
     bsf activeBalls, 4
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball5Position
     call openCreatedBallLights
     goto finishBallUpdate
     
 createBall6:
     bsf activeBalls, 5
-    movlw b'00000011' ; for modulo
-    andwf timer1_initial_value, 0; store in W
-    movwf timer1Modulo
     movff timer1Modulo, ball6Position
     call openCreatedBallLights
     goto finishBallUpdate
