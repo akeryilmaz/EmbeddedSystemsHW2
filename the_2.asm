@@ -96,6 +96,20 @@ timer0_table
     RETLW d'100' ;1 -> 100*4,992 = 499,2 ms
     RETLW d'80' ;2 -> 80*4,992 = 399,39 ms
     RETLW d'60' ;3 -> 60*4,992 = 299,52 ms
+    
+7_segment_table
+    MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
+    RLNCF   WREG, W ; multiply index X2
+    ADDWF   PCL, F  ; modify program counter
+    RETLW b'00111111' ;0 representation in LEDs
+    RETLW b'00000110' ;1 representation in LEDs
+    RETLW b'01011011' ;2 representation in LEDs
+    RETLW b'01001111' ;3 representation in LEDs
+    RETLW b'01100110' ;4 representation in LEDs
+    RETLW b'01101101' ;5 representation in LEDs
+    RETLW b'01111101' ;6 representation in LEDs
+    RETLW b'00000111' ;7 representation in LEDs
+    RETLW b'01111111' ;8 representation in LEDs
        
 ball_position_light_table ;Assume a valid ball position on wreg
     rlncf   WREG ; multiply wreg by 2
