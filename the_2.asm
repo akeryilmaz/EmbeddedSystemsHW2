@@ -4,11 +4,6 @@
 ;*******************************************************************************
 ; Variables & Constants
 ;*******************************************************************************
-
-w_temp res 1
-status_temp res 1
-pclath_temp res 1
-iterator res 1
     ; variables 
     ; health
     ; level
@@ -17,6 +12,10 @@ iterator res 1
     ; 15bits to determine which balls are active(5-10-15 are used for each level)
     ; 15 times 5bits for determining where the balls are
     UDATA_ACS
+w_temp res 1
+status_temp res 1
+pclath_temp res 1
+iterator res 1
 pressed res 1 ; pressed[0] := RG0, pressed[2] := RG2, pressed[3] := RG3    
 health res 1; 7 segment display of health is at portH.0 -> b'00000001' = 1
 level res 1; 7 segment display of level is at portH.1 -> b'00000010' = 2
@@ -89,7 +88,7 @@ level_table:
     RETLW d'10' ;2 -> 10 balls
     RETLW d'15' ;3 -> 15 balls
     
-timer0_table:
+timer0_table
     MOVF    PCL, F  ; A simple read of PCL will update PCLATH, PCLATU
     RLNCF   WREG, W ; multiply index X2
     ADDWF   PCL, F  ; modify program counter
@@ -604,7 +603,7 @@ main
     call initialize
     goto idle
 main_loop:
-    goto moveTheBar
-    call ballUpdate
+    call moveTheBar
+    goto ballUpdate
     goto main_loop
     END
