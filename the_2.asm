@@ -498,6 +498,11 @@ ballUpdate
     movf    level, W
     call    level_table
     movwf   numberOfBallsToCreate
+    movlw   b'00000010'
+    movwf   LATH
+    movf    level, W
+    call    7_segment_table
+    movwf   LATJ
 skip_level_configuration:
     movf    level, W
     call    timer0_table
@@ -669,7 +674,8 @@ ball6Update
     
 
 decreaseHealth
-    decf health, 1
+    dcfsnz health, 1
+    goto idle
     movlw b'00000001'
     movwf LATH
     movf health, 0
@@ -698,9 +704,16 @@ decreaseHealth
 ; goto <restart>
 
 
-idle:  ; restart part is here too
-    ; TODO set "15 bit active balls" to 0
-    ; TODO set "ball update period" to its new value
+idle:  ; restart part is here 
+    bcf	INTCON, 7   ;disable interrupts
+    bcf T0CON, 7    ;disable Timer0 by setting TMR0ON to 0
+    movlw d'61'; 
+    movwf TMR0L; 
+    movlw d'100'; 
+    movwf timer0_counter
+    ; TODO set "ball update period" to its new valuetoo
+    clrf timer0_state
+    clrf activeballs
     clrf pressed
     movlw d'1'
     movwf level
@@ -708,7 +721,6 @@ idle:  ; restart part is here too
     movwf health
     clrf LATG
     goto wait_rg0_press
-    
 main
     call initialize
     goto idle
