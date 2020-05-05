@@ -231,20 +231,19 @@ initialize
     movlw d'1'
     movwf level
     movlw d'1'
-    movwf TRISH ; enable first 7segment display for setting health
+    movwf LATH ; enable first 7segment display for setting health
     movlw b'01101101' ;5 for 7segment display
-    movwf LATJ ; TODO we may need to movwf to TRISJ instead
+    movwf LATJ ; 
     nop ;it says wait a while on the hw pdf
-    clrf TRISH
+    clrf LATH
     clrf LATJ
     movlw d'2'
-    movwf TRISH ;enable second 7segment display for setting level
+    movwf LATH ;enable second 7segment display for setting level
     movlw b'00000110' ; 1 for 7segment display
     movwf LATJ ; TODO we may need to movwf to TRISJ instead
     nop ;it says wait a while on the hw pdf
-    clrf TRISH
+    clrf LATH
     clrf LATJ
-    
     clrf activeBalls
     movlw d'20'
     movwf barPosition
@@ -703,8 +702,7 @@ ball6Update
     
 
 decreaseHealth
-    dcfsnz health, 1
-    goto idle
+    decf health,1
     movlw b'00000001'
     movwf LATH
     movf health, 0
