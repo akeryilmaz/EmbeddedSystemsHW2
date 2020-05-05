@@ -388,7 +388,7 @@ ballUpdate
     incf	level 
     movf	level, W
     sublw	d'4'; if level is four
-    btfss	STATUS, Z               ;Is the result Zero?
+    btfsc	STATUS, Z               ;Is the result Zero?
     goto	idle;
     movf	level, W
     call	level_table
