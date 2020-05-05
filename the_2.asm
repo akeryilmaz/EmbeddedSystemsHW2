@@ -391,7 +391,20 @@ ballUpdate
 skip_level_configuration:
     movf	level, W
     call	timer0_table
-    movwf	timer0_counter   
+    movwf	timer0_counter
+    ;update balls
+    btfsc activeBalls, 0 ; if ball not active, skip
+    call ball1Update
+    btfsc activeBalls, 1 ; if ball not active, skip
+    call ball2Update
+    btfsc activeBalls, 2 ; if ball not active, skip
+    call ball3Update
+    btfsc activeBalls, 3 ; if ball not active, skip
+    call ball4Update
+    btfsc activeBalls, 4 ; if ball not active, skip
+    call ball5Update
+    btfsc activeBalls, 5 ; if ball not active, skip
+    call ball6Update
     ;create a new ball
     btfss activeBalls, 0 ; if ball is active, skip
     goto createBall1
@@ -420,10 +433,6 @@ skip_level_configuration:
 	cpfsgt level  
 	rrncf timer1_initial_value
 	return 
-    
-
-    btfsc activeBalls, 0 ; if ball not active, skip
-    call ball1Update
     return ;not sure if the behaviour is correct. put for completeness.
 
 createBall1:
@@ -467,7 +476,76 @@ ball1Update
     bcf activeBalls, 0
     return
 
+ball2Update
+    movlw 4
+    addwf ball2Position
+    call checkBall2
+    btfss activeBalls, 1 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball2Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball2Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 1
+    return
 
+ball3Update
+    movlw 4
+    addwf ball3Position
+    call checkBall3
+    btfss activeBalls, 2 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball3Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball3Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 2
+    return
+   
+ball4Update
+    movlw 4
+    addwf ball4Position
+    call checkBall4
+    btfss activeBalls, 3 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball4Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball4Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 3
+    return 
+    
+ball5Update
+    movlw 4
+    addwf ball5Position
+    call checkBall5
+    btfss activeBalls, 4 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball5Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball5Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 4
+    return
+    
+ball6Update
+    movlw 4
+    addwf ball6Position
+    call checkBall6
+    btfss activeBalls, 5 ; if the ball is caught return
+    return
+    movlw 24
+    cpfslt ball6Position ; if ball position <24 don't decrease health
+    call decreaseHealth
+    movlw 24
+    cpfslt ball6Position ; if ball position <24 don't deactive the ball
+    bcf activeBalls, 5
+    return
+    
 ; TODO decrease health
 decreaseHealth
     return
